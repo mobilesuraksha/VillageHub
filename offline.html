@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>You're offline - VillageHub</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --g: #146B4D;
+      --ink: #16241D;
+      --muted: #52655B;
+      --bg: #FFFFFF;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 24px;
+      text-align: center;
+    }
+    .wrap { max-width: 360px; }
+    .mark {
+      width: 88px; height: 88px; border-radius: 22px; background: var(--g);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+    }
+    h1 { font-size: 1.4rem; margin: 0 0 8px; }
+    p { color: var(--muted); line-height: 1.5; margin: 0 0 24px; }
+    button {
+      background: var(--g); color: #fff; border: none; padding: 12px 28px;
+      border-radius: 999px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    }
+    button:hover { opacity: .9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0F1C16; --ink: #EAF2EC; --muted: #B7C7BC; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="mark" aria-hidden="true">
+      <svg width="44" height="44" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="240.00,110.00 256.00,196.00 272.00,110.00" fill="#fff"/>
+        <circle cx="256" cy="106" r="22" fill="#fff"/>
+        <circle cx="256" cy="256" r="50" fill="#fff"/>
+      </svg>
+    </div>
+    <h1>You're offline</h1>
+    <p>VillageHub can't reach the network right now. Check your connection and try again - anything you already opened will still work.</p>
+    <button onclick="location.reload()">Retry</button>
+  </div>
+</body>
+</html>

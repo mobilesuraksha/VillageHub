@@ -1,0 +1,9 @@
+# VillageHub - https://villagehub.app
+# Replace the domain above (and the Sitemap line below) with your real domain after deploying.
+
+User-agent: *
+Allow: /
+Disallow: /account/
+Disallow: /admin/
+
+Sitemap: https://villagehub.app/sitemap.xml
