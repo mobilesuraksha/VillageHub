@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// ============================================================================
+// VillageHub - Storage Security Rules
+// Folder layout:
+//   /listings/{uid}/{listingId}/{fileName}   - listing photos
+//   /shops/{uid}/{shopId}/{fileName}         - shop logo/banner/gallery
+//   /users/{uid}/{fileName}                  - profile photos
+//   /jobs/{uid}/{jobId}/{fileName}           - resumes/attachments
+// Anyone can read public media (needed to render listings to signed-out
+// visitors); only the owning uid can write into their own folder, and only
+// if the upload passes basic type/size validation.
+// ============================================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidImage() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    function isValidDocument() {
+      return request.resource.size < 10 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+            || request.resource.contentType == 'application/pdf');
+    }
+
+    match /listings/{userId}/{listingId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId) && isValidImage();
+      allow delete: if isOwner(userId);
+    }
+
+    match /shops/{userId}/{shopId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId) && isValidImage();
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId) && isValidImage();
+      allow delete: if isOwner(userId);
+    }
+
+    match /jobs/{userId}/{jobId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId) && isValidDocument();
+      allow delete: if isOwner(userId);
+    }
+
+    // Deny everything else by default.
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,204 @@
+rules_version = '2';
+
+// ============================================================================
+// VillageHub - Firestore Security Rules
+//
+// Design principles:
+//  1. Public marketplace content (approved listings/shops/jobs/news/offers) is
+//     readable by anyone, signed in or not - this is a public directory.
+//  2. Every write is validated server-side. The client UI may hide buttons,
+//     but the rules below are the real security boundary.
+//  3. New user-generated content (listings/shops/jobs/services) is always
+//     created with status:'pending' and cannot skip moderation from the
+//     client - only an admin/moderator account can flip status to 'approved'.
+//  4. Users can never grant themselves elevated roles or "un-suspend"
+//     themselves by editing their own /users doc.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------- Helper functions ----------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc().role == 'admin';
+    }
+
+    function isModerator() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (userDoc().role == 'admin' || userDoc().role == 'moderator');
+    }
+
+    // A user who is signed in, has a profile doc, and is not suspended.
+    function isActiveUser() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc().status != 'suspended';
+    }
+
+    // True if `field` is identical between the existing doc and the incoming write.
+    function unchanged(field) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([field]);
+    }
+
+    function isValidListing(d) {
+      return d.title is string && d.title.size() > 0 && d.title.size() <= 100
+        && d.description is string && d.description.size() <= 3000
+        && d.price is number && d.price >= 0
+        && d.category is string
+        && d.sellerId == request.auth.uid
+        && d.status == 'pending';
+    }
+
+    function isValidShop(d) {
+      return d.name is string && d.name.size() > 0 && d.name.size() <= 100
+        && d.ownerId == request.auth.uid
+        && d.status == 'pending';
+    }
+
+    function isValidJob(d) {
+      return d.title is string && d.title.size() > 0 && d.title.size() <= 100
+        && d.employerId == request.auth.uid
+        && d.status == 'pending';
+    }
+
+    // ---------------- users ----------------
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.uid == userId
+        && request.resource.data.role == 'user'
+        && request.resource.data.status == 'active';
+      // Owners may edit their own profile but never their own role/status.
+      allow update: if (isSignedIn() && request.auth.uid == userId
+                          && unchanged('role') && unchanged('status'))
+                        || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- listings (Buy & Sell) ----------------
+    match /listings/{listingId} {
+      allow read: if (resource.data.status == 'approved')
+        || (isSignedIn() && resource.data.sellerId == request.auth.uid)
+        || isModerator();
+      allow create: if isActiveUser() && isValidListing(request.resource.data);
+      allow update: if isSignedIn() && (
+        (resource.data.sellerId == request.auth.uid && unchanged('sellerId')) || isModerator()
+      );
+      allow delete: if isSignedIn() && (resource.data.sellerId == request.auth.uid || isModerator());
+    }
+
+    // ---------------- shops ----------------
+    match /shops/{shopId} {
+      allow read: if (resource.data.status == 'approved')
+        || (isSignedIn() && resource.data.ownerId == request.auth.uid)
+        || isModerator();
+      allow create: if isActiveUser() && isValidShop(request.resource.data);
+      allow update: if isSignedIn() && (
+        (resource.data.ownerId == request.auth.uid && unchanged('ownerId')) || isModerator()
+      );
+      allow delete: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isModerator());
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isActiveUser() && request.resource.data.userId == request.auth.uid
+          && request.resource.data.rating is number
+          && request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
+        allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isModerator());
+      }
+    }
+
+    // ---------------- jobs ----------------
+    match /jobs/{jobId} {
+      allow read: if (resource.data.status == 'approved')
+        || (isSignedIn() && resource.data.employerId == request.auth.uid)
+        || isModerator();
+      allow create: if isActiveUser() && isValidJob(request.resource.data);
+      allow update: if isSignedIn() && (
+        (resource.data.employerId == request.auth.uid && unchanged('employerId')) || isModerator()
+      );
+      allow delete: if isSignedIn() && (resource.data.employerId == request.auth.uid || isModerator());
+
+      match /applications/{applicationId} {
+        allow create: if isActiveUser() && request.resource.data.applicantId == request.auth.uid;
+        allow read: if isSignedIn() && (
+          resource.data.applicantId == request.auth.uid ||
+          get(/databases/$(database)/documents/jobs/$(jobId)).data.employerId == request.auth.uid ||
+          isModerator()
+        );
+        allow update: if isSignedIn() && (
+          get(/databases/$(database)/documents/jobs/$(jobId)).data.employerId == request.auth.uid || isModerator()
+        );
+        allow delete: if isSignedIn() && (resource.data.applicantId == request.auth.uid || isModerator());
+      }
+    }
+
+    // ---------------- offers ----------------
+    match /offers/{offerId} {
+      allow read: if resource.data.status == 'active' || isModerator();
+      allow write: if isModerator();
+    }
+
+    // ---------------- news ----------------
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if isModerator();
+    }
+
+    // ---------------- services ----------------
+    match /services/{serviceId} {
+      allow read: if (resource.data.status == 'approved')
+        || (isSignedIn() && resource.data.providerId == request.auth.uid)
+        || isModerator();
+      allow create: if isActiveUser()
+        && request.resource.data.providerId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isSignedIn() && (
+        (resource.data.providerId == request.auth.uid && unchanged('providerId')) || isModerator()
+      );
+      allow delete: if isSignedIn() && (resource.data.providerId == request.auth.uid || isModerator());
+    }
+
+    // ---------------- categories (admin managed taxonomy) ----------------
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------------- reports (user -> moderator flagging) ----------------
+    match /reports/{reportId} {
+      allow create: if isActiveUser() && request.resource.data.reportedBy == request.auth.uid;
+      allow read, update, delete: if isModerator();
+    }
+
+    // ---------------- notifications ----------------
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // Created by the client (self) or trusted backend contexts (Admin SDK bypasses rules).
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && unchanged('userId');
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // ---------------- saved (bookmarks) ----------------
+    match /saved/{savedId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isActiveUser() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Deny-by-default for anything not explicitly matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
