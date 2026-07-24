@@ -1,0 +1,190 @@
+/*
+  VillageHub design tokens
+  ------------------------
+  Identity: a village "hub" - the gathering point of a community (the brand
+  mark is a 6-spoke hub/node shape, echoing both a banyan-tree canopy and a
+  connection point). Deep banyan green + marigold gold instead of generic
+  SaaS blue/teal; Baloo 2 (rounded, vernacular-signage roots) for display
+  type paired with Noto Sans for clean, multilingual-ready body text.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Brand ---------- */
+  --color-primary: #146B4D;
+  --color-primary-dark: #0E4F38;
+  --color-primary-light: #4FA688;
+  --color-primary-tint: #E6F2ED;
+  --color-accent: #E29B26;
+  --color-accent-dark: #B87A15;
+  --color-accent-tint: #FBF0DC;
+
+  --color-success: #2E8B57;
+  --color-success-tint: #E4F3EA;
+  --color-warning: #E29B26;
+  --color-warning-tint: #FBF0DC;
+  --color-danger: #C0432E;
+  --color-danger-tint: #FBEAE7;
+  --color-info: #2C6FA8;
+  --color-info-tint: #E7F0F8;
+
+  /* ---------- Surfaces & text (light) ---------- */
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F6F7F5;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F2F4F1;
+  --color-border: #E4E7E2;
+  --color-border-strong: #C9D0C6;
+  --color-overlay: rgba(16, 26, 20, 0.55);
+
+  --color-text-primary: #16241D;
+  --color-text-secondary: #52655B;
+  --color-text-tertiary: #8B9A8F;
+  --color-text-on-primary: #FFFFFF;
+  --color-text-on-accent: #2B1D02;
+  --color-link: #146B4D;
+
+  /* ---------- Shadows (brand-tinted, not pure black) ---------- */
+  --shadow-sm: 0 1px 2px rgba(22, 36, 29, 0.06), 0 1px 1px rgba(22, 36, 29, 0.04);
+  --shadow-md: 0 6px 16px rgba(22, 36, 29, 0.08), 0 2px 4px rgba(22, 36, 29, 0.05);
+  --shadow-lg: 0 16px 32px rgba(22, 36, 29, 0.12), 0 4px 8px rgba(22, 36, 29, 0.06);
+  --shadow-xl: 0 24px 48px rgba(22, 36, 29, 0.18);
+  --shadow-focus: 0 0 0 3px rgba(20, 107, 77, 0.35);
+
+  /* ---------- Typography ---------- */
+  --font-display: 'Baloo 2', 'Poppins', system-ui, sans-serif;
+  --font-body: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 2.875rem;
+
+  --lh-tight: 1.2;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.7;
+
+  /* ---------- Spacing scale ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---------- Radius (generous, rounded - matches Baloo's warmth) ---------- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* ---------- Layout ---------- */
+  --header-height: 64px;
+  --bottom-nav-height: 64px;
+  --container-max: 1280px;
+  --drawer-width: min(320px, 86vw);
+
+  /* ---------- Motion ---------- */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 420ms;
+
+  /* ---------- Z-index scale ---------- */
+  --z-sticky: 40;
+  --z-header: 100;
+  --z-drawer: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+  --z-install-banner: 90;
+}
+
+/* ---------- Dark theme ---------- */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-primary: #4FCB93;
+  --color-primary-dark: #34A876;
+  --color-primary-light: #7EDDB2;
+  --color-primary-tint: #172A22;
+  --color-accent: #F0B24E;
+  --color-accent-dark: #D9963A;
+  --color-accent-tint: #2E2410;
+
+  --color-success: #4FCB93;
+  --color-success-tint: #172A22;
+  --color-warning: #F0B24E;
+  --color-warning-tint: #2E2410;
+  --color-danger: #E4695A;
+  --color-danger-tint: #2E1917;
+  --color-info: #6FA8DC;
+  --color-info-tint: #16232E;
+
+  --color-bg: #0F1C16;
+  --color-bg-secondary: #142219;
+  --color-surface: #1B2E23;
+  --color-surface-hover: #223A2C;
+  --color-border: #2A4033;
+  --color-border-strong: #395143;
+  --color-overlay: rgba(0, 0, 0, 0.65);
+
+  --color-text-primary: #EAF2EC;
+  --color-text-secondary: #B7C7BC;
+  --color-text-tertiary: #728178;
+  --color-text-on-primary: #0A1510;
+  --color-text-on-accent: #241a02;
+  --color-link: #7EDDB2;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.55);
+  --shadow-focus: 0 0 0 3px rgba(79, 203, 147, 0.4);
+}
+
+/* Respect system preference until the user makes an explicit choice
+   (theme.js sets data-theme explicitly and persists it after that). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+    --color-primary: #4FCB93;
+    --color-primary-dark: #34A876;
+    --color-primary-light: #7EDDB2;
+    --color-primary-tint: #172A22;
+    --color-accent: #F0B24E;
+    --color-accent-dark: #D9963A;
+    --color-accent-tint: #2E2410;
+    --color-success: #4FCB93;
+    --color-success-tint: #172A22;
+    --color-warning: #F0B24E;
+    --color-warning-tint: #2E2410;
+    --color-danger: #E4695A;
+    --color-danger-tint: #2E1917;
+    --color-info: #6FA8DC;
+    --color-info-tint: #16232E;
+    --color-bg: #0F1C16;
+    --color-bg-secondary: #142219;
+    --color-surface: #1B2E23;
+    --color-surface-hover: #223A2C;
+    --color-border: #2A4033;
+    --color-border-strong: #395143;
+    --color-overlay: rgba(0, 0, 0, 0.65);
+    --color-text-primary: #EAF2EC;
+    --color-text-secondary: #B7C7BC;
+    --color-text-tertiary: #728178;
+    --color-text-on-primary: #0A1510;
+    --color-text-on-accent: #241a02;
+    --color-link: #7EDDB2;
+  }
+}
